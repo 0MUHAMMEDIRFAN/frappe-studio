@@ -25,7 +25,7 @@ export function useCanvasDropZone(
 						parentComponent?.addChild(block, index)
 					}
 				}
-
+				
 				let newBlock = getComponentBlock(droppedComponentName)
 				if (newBlock.editInFragmentMode()) {
 					canvasStore.editOnCanvas(

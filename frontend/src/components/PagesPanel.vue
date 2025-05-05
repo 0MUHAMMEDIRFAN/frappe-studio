@@ -63,6 +63,7 @@ const getPageRoute = (page: StudioPage) => {
 }
 
 const getPageMenu = (page: StudioPage) => {
+
 	if (isObjectEmpty(store.activeApp)) return []
 
 	const app = store.activeApp!

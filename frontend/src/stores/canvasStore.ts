@@ -36,6 +36,7 @@ const useCanvasStore = defineStore("canvasStore", () => {
 			ghostElement.style.transform = `scale(${ghostScale || 1})`
 			ghostElement.style.pointerEvents = "none"
 			ghostElement.style.zIndex = "999999"
+			
 			document.body.appendChild(ghostElement)
 
 			// Set the scaled drag image

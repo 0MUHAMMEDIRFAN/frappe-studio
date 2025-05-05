@@ -1,13 +1,6 @@
 <template>
 	<div>
-		<ContextMenu
-			v-if="contextMenuVisible"
-			v-on-click-outside="() => (contextMenuVisible = false)"
-			:pos-x="posX"
-			:pos-y="posY"
-			:options="contextMenuOptions"
-			@select="handleContextMenuSelect"
-		/>
+		<ContextMenu v-if="contextMenuVisible" v-on-click-outside="() => (contextMenuVisible = false)" :pos-x="posX" :pos-y="posY" :options="contextMenuOptions" @select="handleContextMenuSelect" />
 	</div>
 
 	<FormDialog v-model:showDialog="showFormDialog" :block="block" />
@@ -109,6 +102,14 @@ const contextMenuOptions: ContextMenuOption[] = [
 				repeaterBlock.selectBlock()
 				toast.warning("Please set data & data key for the repeater block")
 			}
+		},
+		condition: () => !block.value.isRoot() && !block.value.isRepeater(),
+	},
+	{
+		label: "Convert to Custom",
+		action: () => {
+			const app = store.activeApp!
+			block.value.convertCustomBlock(app.name)
 		},
 		condition: () => !block.value.isRoot() && !block.value.isRepeater(),
 	},

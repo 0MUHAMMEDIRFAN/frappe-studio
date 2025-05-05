@@ -6,10 +6,13 @@ import useStudioStore from "@/stores/studioStore"
 import useCanvasStore from "@/stores/canvasStore"
 
 import components from "@/data/components";
-import { copyObject, generateId, getBlockCopy, isObjectEmpty, kebabToCamelCase, numberToPx } from "./helpers";
+import { copyObject, generateId, getBlockCopy, getBlockCopyWithoutParent, isObjectEmpty, jsToJson, kebabToCamelCase, numberToPx } from "./helpers";
 
 import { StyleValue } from "@/types"
 import { ComponentEvent } from "@/types/ComponentEvent"
+import { studioComponents } from "@/data/studioComponents"
+import { StudioComponent } from "@/types/Studio/StudioComponent"
+
 
 export type styleProperty = keyof CSSProperties | `__${string}`;
 class Block implements BlockOptions {
@@ -144,7 +147,7 @@ class Block implements BlockOptions {
 			return arrayLength
 		}
 		return clamp(index, 0, arrayLength)
-	  }
+	}
 
 	addChildAfter(child: BlockOptions, siblingBlock: Block) {
 		const siblingIndex = this.getChildIndex(siblingBlock)
@@ -352,9 +355,8 @@ class Block implements BlockOptions {
 		if (paddingTop && paddingLeft && paddingTop === paddingBottom && paddingLeft === paddingRight) {
 			return `${paddingTop} ${paddingLeft}`;
 		} else {
-			return `${paddingTop || padding} ${paddingRight || padding} ${paddingBottom || padding} ${
-				paddingLeft || padding
-			}`;
+			return `${paddingTop || padding} ${paddingRight || padding} ${paddingBottom || padding} ${paddingLeft || padding
+				}`;
 		}
 	}
 
@@ -451,13 +453,32 @@ class Block implements BlockOptions {
 		if (marginTop && marginLeft && marginTop === marginBottom && marginLeft === marginRight) {
 			return `${marginTop} ${marginLeft}`;
 		} else {
-			return `${marginTop || margin} ${marginRight || margin} ${marginBottom || margin} ${
-				marginLeft || margin
-			}`;
+			return `${marginTop || margin} ${marginRight || margin} ${marginBottom || margin} ${marginLeft || margin
+				}`;
 		}
 	}
 
 	// context menu
+	convertCustomBlock(appID: string) {
+		if (this.isRoot()) return
+		const blockCopy = getBlockCopyWithoutParent(this)
+		const blockData = jsToJson(blockCopy)
+		const store = useStudioStore()
+		const args = {
+			name: "New",
+			studio_app: appID,
+			blocks: blockData,
+		}
+		return studioComponents.insert.submit(args)
+			.then((component: StudioComponent) => {
+				console.log(component)
+				// store.appComponents.value[component.name] = component;
+			})
+			.finally(() => {
+				// savingPage.value = false
+			})
+
+	}
 	duplicateBlock() {
 		if (this.isRoot()) return
 

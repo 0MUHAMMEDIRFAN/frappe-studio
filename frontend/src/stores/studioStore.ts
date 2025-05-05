@@ -23,6 +23,7 @@ import useCanvasStore from "@/stores/canvasStore"
 
 import type { StudioApp } from "@/types/Studio/StudioApp"
 import type { StudioPage } from "@/types/Studio/StudioPage"
+import type { StudioComponent } from "@/types/Studio/StudioComponent"
 import type { Resource } from "@/types/Studio/StudioResource"
 import { LeftPanelOptions, RightPanelOptions, SelectOption, StudioMode } from "@/types"
 import ComponentContextMenu from "@/components/ComponentContextMenu.vue"
@@ -30,6 +31,7 @@ import { studioVariables } from "@/data/studioVariables"
 import { Variable } from "@/types/Studio/StudioPageVariable"
 import { toast } from "vue-sonner"
 import { createResource } from "frappe-ui"
+import { studioComponents } from "@/data/studioComponents"
 
 const useStudioStore = defineStore("store", () => {
 	const studioLayout = reactive({
@@ -49,23 +51,38 @@ const useStudioStore = defineStore("store", () => {
 	// studio apps
 	const activeApp = ref<StudioApp | null>(null)
 	const appPages = ref<Record<string, StudioPage>>({})
+	const appComponents = ref<Record<string, StudioComponent>>({})
 
 	async function setApp(appName: string) {
 		const appDoc = await fetchApp(appName)
 		activeApp.value = appDoc
 		await setAppPages(appName)
+		await setComponents(appName)
 	}
 
 	async function setAppPages(appName: string) {
 		if (!appName) {
 			return
 		}
-		studioPages.filters = { studio_app : appName }
+		studioPages.filters = { studio_app: appName }
 		await studioPages.reload()
 		appPages.value = {}
 
 		studioPages.data.map((page: StudioPage) => {
 			appPages.value[page.name] = page
+		})
+	}
+
+	async function setComponents(appName: string) {
+		if (!appName) {
+			return
+		}
+		studioComponents.filters = { studio_app: appName }
+		await studioComponents.reload()
+		appComponents.value = {}
+
+		studioComponents.data.map((component: StudioComponent) => {
+			appComponents.value[component.name] = component
 		})
 	}
 
@@ -147,7 +164,6 @@ const useStudioStore = defineStore("store", () => {
 			pageBlocks.value = [canvasStore.activeCanvas.getRootBlock()]
 		}
 		const pageData = jsToJson(pageBlocks.value.map((block) => getBlockCopyWithoutParent(block)))
-
 		const args = {
 			name: selectedPage.value,
 			draft_blocks: pageData,
@@ -178,8 +194,8 @@ const useStudioStore = defineStore("store", () => {
 		return studioPages.runDocMethod
 			.submit(
 				{
-				name: selectedPage.value,
-				method: "publish",
+					name: selectedPage.value,
+					method: "publish",
 				},
 				{
 					onError(error: any) {
@@ -319,6 +335,9 @@ const useStudioStore = defineStore("store", () => {
 		updateActivePage,
 		publishPage,
 		openPageInBrowser,
+		// studio components
+		appComponents,
+		setComponents,
 		// styles
 		stylePropertyFilter,
 		// data
